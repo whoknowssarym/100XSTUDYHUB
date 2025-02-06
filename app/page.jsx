@@ -21,7 +21,7 @@ export default function Home() {
       <SubjectAreas />
       <FeaturedResources />
       <WhyChooseUs />
-      {/* <Testimonials /> */}
+      <Testimonials />
       <Newsletter />
     </div>
   );

@@ -2,11 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, GraduationCap } from 'lucide-react';
+import { Search, Menu, X, GraduationCap, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Header() {
+  const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
@@ -17,7 +25,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="border-b">
+    <header className="border-b sticky top-0 bg-background z-50">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -50,7 +58,33 @@ export default function Header() {
               ))}
             </div>
             
-            {/* <Button>Sign In</Button> */}
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">{session.user.name || session.user.email}</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {session.user.role === 'admin' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/upload">Upload Resources</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex space-x-4">
+                <Button variant="ghost" asChild>
+                  <Link href="/auth/signin">Sign In</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/auth/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -92,7 +126,29 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
-              <Button className="w-full">Sign In</Button>
+              {session ? (
+                <>
+                  {session.user.role === 'admin' && (
+                    <Link
+                      href="/admin/upload"
+                      className="text-sm font-medium transition-colors hover:text-primary"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Upload Resources
+                    </Link>
+                  )}
+                  <Button onClick={() => signOut()}>Sign Out</Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link href="/auth/signin">Sign In</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/auth/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

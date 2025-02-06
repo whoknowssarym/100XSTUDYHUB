@@ -1,7 +1,5 @@
 -- Create database  
 CREATE DATABASE studyhub;  
-\c studyhub;
-
 -- Create tables  
 CREATE TABLE subjects (  
   id SERIAL PRIMARY KEY,  

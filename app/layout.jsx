@@ -3,6 +3,9 @@ import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from './api/auth/[...nextauth]/route';
+import { Providers } from '@/app/providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +26,14 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+// Force dynamic rendering to support server-side operations
+export const dynamic = 'force-dynamic';
+
+export const metadataBase = new URL('https://100xstudyhub.com');
+
+export default async function RootLayout({ children }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -32,14 +42,16 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
-        </div>
+        <Providers session={session}>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+            <Toaster />
+          </div>
+        </Providers>
       </body>
     </html>
   );
