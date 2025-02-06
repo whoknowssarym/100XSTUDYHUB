@@ -82,3 +82,89 @@ INSERT INTO resources (title, description, type, subject_id, category_id, file_u
   ('Physics Study Guide', 'Comprehensive study material for mechanics and thermodynamics', 'note', 2, 2, '/samples/physics-guide.pdf', 987),  
   ('Chemistry Notes Bundle', 'Complete organic chemistry notes with practice problems', 'note', 3, 2, '/samples/chemistry-notes.pdf', 756),  
   ('Biology Quick Guide', 'Essential concepts and diagrams for final exam preparation', 'guide', 4, 4, '/samples/biology-guide.pdf', 543);
+
+
+
+
+-- 2nd step 
+
+
+/*
+  # University and Discussion System Schema Update
+
+  1. New Tables
+    - universities
+      - Store university information
+      - Track associated resources
+    - discussions
+      - Enable user discussions on resources
+      - Track user interactions
+
+  2. Updates
+    - Modified subjects table to link with universities
+    - Added subject code field
+    - Enhanced user roles
+*/
+
+-- Create universities table
+CREATE TABLE universities (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  code VARCHAR(50) UNIQUE NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add university_id to subjects
+ALTER TABLE subjects
+ADD COLUMN university_id INT REFERENCES universities(id),
+ADD COLUMN code VARCHAR(50);
+
+-- Create discussions table
+CREATE TABLE discussions (
+  id SERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  resource_id INT REFERENCES resources(id),
+  user_id INT REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add role to users
+ALTER TABLE users
+ADD COLUMN role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('user', 'admin'));
+
+-- Create indexes
+CREATE INDEX idx_subjects_university ON subjects(university_id);
+CREATE INDEX idx_subjects_code ON subjects(code);
+CREATE INDEX idx_discussions_resource ON discussions(resource_id);
+CREATE INDEX idx_discussions_user ON discussions(user_id);
+CREATE INDEX idx_discussions_created ON discussions(created_at DESC);
+
+-- Insert sample universities
+INSERT INTO universities (name, code, description) VALUES
+  ('FAST University', 'FAST', 'Foundation for Advancement of Science and Technology'),
+  ('Virtual University', 'VU', 'Pakistan''s First Online University'),
+  ('COMSATS University', 'COMSATS', 'Commission on Science and Technology for Sustainable Development');
+
+-- Update sample subjects with university IDs and codes
+UPDATE subjects SET 
+  university_id = 1,
+  code = 'CS-101'
+WHERE name = 'Mathematics';
+
+UPDATE subjects SET 
+  university_id = 1,
+  code = 'PHY-101'
+WHERE name = 'Physics';
+
+UPDATE subjects SET 
+  university_id = 2,
+  code = 'CHEM-101'
+WHERE name = 'Chemistry';
+
+UPDATE subjects SET 
+  university_id = 3,
+  code = 'BIO-101'
+WHERE name = 'Biology';
